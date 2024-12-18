@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "874539196455",
+    "project_id": "flutter-films-mukachev",
+    "storage_bucket": "flutter-films-mukachev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874539196455:android:455b472da7cf31c7472e02",
+        "android_client_info": {
+          "package_name": "com.example.cashflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKakS4dzfbmsFSCP4NzN9eZ6SDLSeCcvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874539196455:android:e27850e2f154d2af472e02",
+        "android_client_info": {
+          "package_name": "com.example.meetcake"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKakS4dzfbmsFSCP4NzN9eZ6SDLSeCcvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
