@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class NavigationScreen extends StatefulWidget {
+  const NavigationScreen({super.key});
   @override
   State<NavigationScreen> createState() => _NavigationScreenState();
 }
@@ -20,63 +21,72 @@ class _NavigationScreenState extends State<NavigationScreen> {
     const PurposeScreen(),
     const SettingsScreen(),
   ];
-
+  bool isAuth = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Center(
           child: _widgetOptions.elementAt(_selectedIndex),
         ),
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 20,
-              color: Colors.black.withOpacity(.1),
-            )
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-            child: GNav(
-              rippleColor: Colors.grey[300]!,
-              hoverColor: Colors.grey[100]!,
-              gap: 8,
-              activeColor: Colors.black,
-              iconSize: 24,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              duration: Duration(milliseconds: 400),
-              tabBackgroundColor: Colors.grey[100]!,
-              color: Colors.black,
-              tabs: [
-                GButton(
-                  icon: Icons.home_filled,
-                  text: 'Home',
-                ),
-                GButton(
-                  icon: Icons.add_circle_outline_rounded,
-                  text: 'Add',
-                ),
-                GButton(
-                  icon: Icons.note,
-                  text: 'Purpose',
-                ),
-                GButton(
-                  icon: Icons.account_circle_outlined,
-                  text: 'Profile',
-                ),
-              ],
-              selectedIndex: _selectedIndex,
-              onTabChange: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 20,
+                color: Colors.black.withOpacity(.1),
+              )
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+              child: GNav(
+                rippleColor: Colors.grey[300]!,
+                hoverColor: Colors.grey[100]!,
+                gap: 8,
+                activeColor: Colors.black,
+                iconSize: 24,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                duration: Duration(milliseconds: 400),
+                tabBackgroundColor: Colors.grey[100]!,
+                color: Colors.black,
+                tabs: [
+                  GButton(
+                    icon: Icons.home_filled,
+                    text: 'Home',
+                    textSize: 30,
+                    iconSize: 30,
+                  ),
+                  GButton(
+                    icon: Icons.note,
+                    text: 'Purpose',
+                    textSize: 30,
+                    iconSize: 30,
+                  ),
+                  GButton(
+                    icon: Icons.account_circle_outlined,
+                    text: 'Profile',
+                    leading: CircleAvatar(
+                      backgroundImage: AssetImage('assets/nix.png'),
+                      radius: 12,
+                    ),
+                  ),
+                ],
+                selectedIndex: _selectedIndex,
+                onTabChange: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+              ),
             ),
           ),
         ),
