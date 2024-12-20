@@ -76,7 +76,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     text: 'Profile',
                     leading: CircleAvatar(
                       backgroundImage: AssetImage('assets/nix.png'),
-                      radius: 12,
+                      radius: 16,
                     ),
                   ),
                 ],

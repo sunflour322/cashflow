@@ -49,19 +49,54 @@ class _HomeScreenState extends State<HomeScreen> {
                     duration: const Duration(milliseconds: 300),
                     left: isActive ? 10 : 0, // Object moves down or back up
                     top: isActive
-                        ? 400
-                        : 0, // Moves down when the container opens
-                    child: Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                      ),
-                      child: Image.asset(
-                        'assets/nix.png',
-                        fit: BoxFit.fill,
-                      ),
+                        ? 350
+                        : 10, // Moves down when the container opens
+                    child: GestureDetector(
+                      onTap: () {
+                        print('helo');
+                      },
+                      child: Container(
+                          width: 180,
+                          height: 130,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: const Color.fromARGB(255, 78, 78, 78)),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Общий Баланс',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Image.asset(
+                                    'assets/ruble.png',
+                                    scale: 15,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text('25 000.01',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                                  ),
+                                ],
+                                mainAxisAlignment: MainAxisAlignment.center,
+                              ),
+                              Icon(
+                                Icons.arrow_drop_down,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                            ],
+                          )),
                     ),
                   ),
                   // The container that will open/close and animate its size
@@ -72,8 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     top: 10,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      width: isActive ? 350 : 200,
-                      height: isActive ? 350 : 200,
+                      width: isActive ? 300 : 200,
+                      height: isActive ? 300 : 150,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         gradient: LinearGradient(
@@ -100,7 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () {
                                   isActiveCheck();
                                 },
-                                icon: Icon(Icons.zoom_out_map_rounded),
+                                icon: isActive
+                                    ? Icon(Icons.zoom_in_map_rounded)
+                                    : Icon(Icons.zoom_out_map_rounded),
                               ),
                             ],
                           ),
