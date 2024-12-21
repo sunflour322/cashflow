@@ -69,7 +69,10 @@ flutter:
     - assets/dollar.png
     - assets/nix.png
     - assets/ruble.png
+    - assets/sber.png
     - assets/diamond.gif
+    - assets/t-bank.jpg
+    - assets/alfa.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

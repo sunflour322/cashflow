@@ -1,3 +1,4 @@
+import 'package:cashflow/nav_screens/purpose_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -10,10 +11,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isActive = false;
+  bool isBalance = false;
 
   void isActiveCheck() {
     setState(() {
       isActive = !isActive;
+    });
+  }
+
+  void isBalanceCheck() {
+    setState(() {
+      isBalance = !isBalance;
     });
   }
 
@@ -38,68 +46,69 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
               width: 600,
-              height: 800,
+              height: isActive ? 430 : 170,
               child: Stack(
                 alignment: AlignmentDirectional.topStart,
                 children: [
-                  // Wrapping the object to the left of the container in a AnimatedPositioned widget.
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
-                    left: isActive ? 10 : 0, // Object moves down or back up
-                    top: isActive
-                        ? 350
-                        : 10, // Moves down when the container opens
-                    child: GestureDetector(
-                      onTap: () {
-                        print('helo');
-                      },
-                      child: Container(
+                    left: isActive ? 10 : 0,
+                    top: isActive ? 320 : 10,
+                    child: SingleChildScrollView(
+                      child: GestureDetector(
+                        onTap: () {
+                          isBalanceCheck();
+                        },
+                        child: Container(
                           width: 180,
-                          height: 130,
+                          height: 100,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: const Color.fromARGB(255, 78, 78, 78)),
+                            borderRadius: BorderRadius.circular(20),
+                            color: const Color.fromARGB(255, 78, 78, 78),
+                          ),
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
                                   'Общий Баланс',
                                   style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Image.asset(
-                                    'assets/ruble.png',
-                                    scale: 15,
+                                    'assets/diamond.gif',
+                                    scale: 3,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child: Text('25 000.01',
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white)),
+                                    child: Text(
+                                      '25 000.01',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ],
-                                mainAxisAlignment: MainAxisAlignment.center,
-                              ),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                size: 30,
-                                color: Colors.white,
                               ),
                             ],
-                          )),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  // The container that will open/close and animate its size
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
                     left: isActive ? 10 : 200,
@@ -130,6 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   isActiveCheck();
                                 },
                                 icon: Icon(Icons.refresh),
+                              ),
+                              Text(
+                                'Графики',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
                               ),
                               IconButton(
                                 onPressed: () {
@@ -330,6 +346,65 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet,
+                        size: 30,
+                        color: Color.fromARGB(255, 66, 66, 66),
+                      ),
+                      Text(
+                        'Пополнения',
+                        style: TextStyle(
+                            color: const Color.fromARGB(255, 66, 66, 66),
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.payment_outlined,
+                        size: 30,
+                        color: Color.fromARGB(255, 66, 66, 66),
+                      ),
+                      Text(
+                        'Траты',
+                        style: TextStyle(
+                            color: const Color.fromARGB(255, 66, 66, 66),
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.adjust_outlined,
+                        size: 30,
+                        color: Color.fromARGB(255, 66, 66, 66),
+                      ),
+                      Text(
+                        'Счета на оплату',
+                        style: TextStyle(
+                            color: const Color.fromARGB(255, 66, 66, 66),
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
