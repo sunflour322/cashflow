@@ -1,6 +1,7 @@
 import 'package:cashflow/nav_screens/purpose_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,10 +20,221 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void isBalanceCheck() {
-    setState(() {
-      isBalance = !isBalance;
-    });
+  final List<Map<String, String>> transactions = [
+    {
+      'title': 'Зарплата',
+      'amount': '+25,000.00',
+      'date': '22 Декабря, 2024',
+      'type': 'income'
+    },
+    {
+      'title': 'Зарплата',
+      'amount': '+25,000.00',
+      'date': '22 Декабря, 2024',
+      'type': 'income'
+    },
+    {
+      'title': 'Зарплата',
+      'amount': '+25,000.00',
+      'date': '22 Декабря, 2024',
+      'type': 'income'
+    },
+    {
+      'title': 'Зарплата',
+      'amount': '+25,000.00',
+      'date': '22 Декабря, 2024',
+      'type': 'income'
+    },
+    {
+      'title': 'Продукты',
+      'amount': '-2,500.00',
+      'date': '21 Декабря, 2024',
+      'type': 'expense'
+    },
+    {
+      'title': 'Кафе',
+      'amount': '-1,200.00',
+      'date': '20 Декабря, 2024',
+      'type': 'expense'
+    },
+    {
+      'title': 'Подарок',
+      'amount': '-3,000.00',
+      'date': '19 Декабря, 2024',
+      'type': 'expense'
+    },
+  ];
+  String enteredAmount = '';
+  String selectedCategory = '';
+
+  void _showBottomSheet(String type) {
+    List<Map<String, String>> categories = [];
+
+    if (type == 'Пополнения') {
+      categories = [
+        {'name': 'Зарплата', 'image': 'assets/alfa.jpg'},
+        {'name': 'Перевод', 'image': 'assets/alfa.jpg'},
+        {'name': 'Бонусы', 'image': 'assets/alfa.jpg'},
+        {'name': 'Другие', 'image': 'assets/alfa.jpg'},
+      ];
+    } else if (type == 'Траты') {
+      categories = [
+        {'name': 'Одежда', 'image': 'assets/alfa.jpg'},
+        {'name': 'Перевод', 'image': 'assets/alfa.jpg'},
+        {'name': 'Техника', 'image': 'assets/alfa.jpg'},
+        {'name': 'Продукты', 'image': 'assets/alfa.jpg'},
+        {'name': 'Другие', 'image': 'assets/alfa.jpg'},
+      ];
+    } else if (type == 'Счета на оплату') {
+      categories = [
+        {'name': 'ЖКХ', 'image': 'assets/alfa.jpg'},
+        {'name': 'Штрафы', 'image': 'assets/alfa.jpg'},
+        {'name': 'Подписки', 'image': 'assets/alfa.jpg'},
+        {'name': 'Другие', 'image': 'assets/alfa.jpg'},
+      ];
+    }
+
+    showModalBottomSheet(
+      sheetAnimationStyle:
+          AnimationStyle(duration: Duration(milliseconds: 1000)),
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return FractionallySizedBox(
+          heightFactor: 0.7,
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 85, 85, 85),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20))),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        '$type',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Align(
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: MediaQuery.of(context).size.width / 4,
+                        child: Center(
+                          child: TextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d{0,2}')),
+                            ],
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: Colors.white, fontSize: 28),
+                            onChanged: (value) {
+                              setState(() {
+                                enteredAmount = value;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: '   0.00',
+                              hintStyle:
+                                  TextStyle(color: Colors.grey, fontSize: 28),
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Категории:',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedCategory = category['name']!;
+                        });
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundImage: AssetImage(category['image']!),
+                            backgroundColor:
+                                selectedCategory == category['name']
+                                    ? Colors.blue
+                                    : Colors.grey[300],
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            category['name']!,
+                            style: TextStyle(
+                              color: selectedCategory == category['name']
+                                  ? Colors.blue
+                                  : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: FloatingActionButton(
+                  backgroundColor: Colors.black,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Icon(
+                    Icons.check,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -43,10 +255,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            AnimatedContainer(
+      body: Column(
+        children: [
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: AnimatedContainer(
               duration: Duration(milliseconds: 300),
               width: 600,
               height: isActive ? 430 : 170,
@@ -55,67 +269,63 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                     left: isActive ? 10 : 0,
                     top: isActive ? 320 : 10,
-                    child: SingleChildScrollView(
-                      child: GestureDetector(
-                        onTap: () {
-                          isBalanceCheck();
-                        },
-                        child: Container(
-                          width: 180,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: const Color.fromARGB(255, 78, 78, 78),
+                    child: Container(
+                      width: 180,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: const Color.fromARGB(255, 78, 78, 78),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Баланс',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              Image.asset(
+                                'assets/diamond.gif',
+                                scale: 3,
+                              ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
-                                  'Общий Баланс',
+                                  '25 000.01',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/diamond.gif',
-                                    scale: 3,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '25 000.01',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                     left: isActive ? 10 : 200,
                     right: 10,
                     top: 10,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                       width: isActive ? 300 : 200,
                       height: isActive ? 300 : 150,
                       decoration: BoxDecoration(
@@ -346,67 +556,112 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () {},
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        size: 30,
-                        color: Color.fromARGB(255, 66, 66, 66),
-                      ),
-                      Text(
-                        'Пополнения',
-                        style: TextStyle(
-                            color: const Color.fromARGB(255, 66, 66, 66),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  _showBottomSheet('Пополнения');
+                },
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet,
+                      size: 30,
+                      color: Color.fromARGB(255, 102, 102, 102),
+                    ),
+                    Text(
+                      'Пополнения',
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 102, 102, 102),
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.payment_outlined,
-                        size: 30,
-                        color: Color.fromARGB(255, 66, 66, 66),
-                      ),
-                      Text(
-                        'Траты',
-                        style: TextStyle(
-                            color: const Color.fromARGB(255, 66, 66, 66),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  _showBottomSheet('Траты');
+                },
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.payment_outlined,
+                      size: 30,
+                      color: Color.fromARGB(255, 102, 102, 102),
+                    ),
+                    Text(
+                      'Траты',
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 102, 102, 102),
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.adjust_outlined,
-                        size: 30,
-                        color: Color.fromARGB(255, 66, 66, 66),
-                      ),
-                      Text(
-                        'Счета на оплату',
-                        style: TextStyle(
-                            color: const Color.fromARGB(255, 66, 66, 66),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  _showBottomSheet('Счета на оплату');
+                },
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.adjust_outlined,
+                      size: 30,
+                      color: Color.fromARGB(255, 102, 102, 102),
+                    ),
+                    Text(
+                      'Счета на оплату',
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 102, 102, 102),
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-              ],
-            )
-          ],
-        ),
+              ),
+            ],
+          ),
+          Expanded(
+            flex: 3,
+            child: ListView.builder(
+              itemCount: transactions.length, // transactions - список операций
+              itemBuilder: (context, index) {
+                final transaction = transactions[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: transaction['type'] == 'income'
+                        ? Colors.green
+                        : Colors.red,
+                    child: Icon(
+                      transaction['type'] == 'income'
+                          ? Icons.arrow_downward
+                          : Icons.arrow_upward,
+                      color: Colors.white,
+                    ),
+                  ),
+                  title: Text(
+                    transaction['title']!,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    transaction['date']!,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Text(
+                    transaction['amount']!,
+                    style: TextStyle(
+                      color: transaction['type'] == 'income'
+                          ? Colors.green
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
