@@ -276,10 +276,11 @@ class _AuthScreenState extends State<AuthScreen>
               ),
               FloatingActionButton.extended(
                 backgroundColor: const Color.fromARGB(255, 255, 153, 0),
-                onPressed: () {
+                onPressed: () async {
                   // Handle authorization logic here
-                  _authService.signUp(_nameController.text,
+                  await _authService.signUp(_nameController.text,
                       _emailController.text, _passwordController.text);
+                  Navigator.popAndPushNamed(context, '/');
                 },
                 label: const Text(
                   'Авторизоваться',

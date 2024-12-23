@@ -1,4 +1,8 @@
+import 'package:cashflow/back/auth_service/user_service.dart';
+import 'package:cashflow/back/transaction_collection/transaction_crud.dart';
 import 'package:cashflow/nav_screens/purpose_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +17,69 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isActive = false;
   bool isBalance = false;
+  String? userId;
+  String? username;
+  Map<String, double> weeklyData = {};
+  final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    userId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (userId != null) {
+      final userData = await _authService.fetchUser();
+      setState(() {
+        username = userData?['username'];
+      });
+
+      // Загружаем данные только после получения username
+      _loadWeeklyData();
+      _loadTransactions();
+    }
+  }
+
+  void _loadWeeklyData() async {
+    print('Fetching weekly data for username: $username');
+    final data = await TransactionCrud().getWeeklyTransactionData(username);
+
+    if (data != null && data.isNotEmpty) {
+      print('Weekly data loaded: $data');
+      setState(() {
+        weeklyData = data;
+      });
+    } else {
+      print('No weekly data found.');
+      setState(() {
+        weeklyData = {};
+      });
+    }
+  }
+
+  List<FlSpot> _generateSpots() {
+    List<String> daysOfWeek = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+
+    List<FlSpot> spots = List.generate(daysOfWeek.length, (index) {
+      final value = weeklyData[daysOfWeek[index]] ?? 0.0;
+      print('Day: ${daysOfWeek[index]}, Value: $value');
+      return FlSpot(index.toDouble(), value);
+    });
+
+    print('Generated spots: $spots');
+    return spots;
+  }
 
   void isActiveCheck() {
     setState(() {
@@ -20,50 +87,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  final List<Map<String, String>> transactions = [
-    {
-      'title': 'Зарплата',
-      'amount': '+25,000.00',
-      'date': '22 Декабря, 2024',
-      'type': 'income'
-    },
-    {
-      'title': 'Зарплата',
-      'amount': '+25,000.00',
-      'date': '22 Декабря, 2024',
-      'type': 'income'
-    },
-    {
-      'title': 'Зарплата',
-      'amount': '+25,000.00',
-      'date': '22 Декабря, 2024',
-      'type': 'income'
-    },
-    {
-      'title': 'Зарплата',
-      'amount': '+25,000.00',
-      'date': '22 Декабря, 2024',
-      'type': 'income'
-    },
-    {
-      'title': 'Продукты',
-      'amount': '-2,500.00',
-      'date': '21 Декабря, 2024',
-      'type': 'expense'
-    },
-    {
-      'title': 'Кафе',
-      'amount': '-1,200.00',
-      'date': '20 Декабря, 2024',
-      'type': 'expense'
-    },
-    {
-      'title': 'Подарок',
-      'amount': '-3,000.00',
-      'date': '19 Декабря, 2024',
-      'type': 'expense'
-    },
-  ];
+  List<Map<String, dynamic>> transactions = [];
+  Future<void> _loadTransactions() async {
+    print(username);
+    final data = await TransactionCrud().getTransactions(username);
+    setState(() {
+      transactions = data;
+      //print(transactions);
+    });
+  }
+
   String enteredAmount = '';
   String selectedCategory = '';
 
@@ -72,10 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (type == 'Пополнения') {
       categories = [
-        {'name': 'Зарплата', 'image': 'assets/alfa.jpg'},
-        {'name': 'Перевод', 'image': 'assets/alfa.jpg'},
-        {'name': 'Бонусы', 'image': 'assets/alfa.jpg'},
-        {'name': 'Другие', 'image': 'assets/alfa.jpg'},
+        {'name': 'Зарплата', 'image': 'assets/zp.png'},
+        {'name': 'Перевод', 'image': 'assets/perevod.png'},
+        {'name': 'Бонусы', 'image': 'assets/bonus.png'},
+        {'name': 'Другие', 'image': 'assets/other.png'},
       ];
     } else if (type == 'Траты') {
       categories = [
@@ -221,8 +254,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.all(15),
                 child: FloatingActionButton(
                   backgroundColor: Colors.black,
-                  onPressed: () {
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    if (enteredAmount.isNotEmpty &&
+                        selectedCategory.isNotEmpty) {
+                      final transactionCrud = TransactionCrud();
+
+                      // Определение типа транзакции
+                      final transactionType = type == 'Пополнения'
+                          ? 'income'
+                          : type == 'Траты'
+                              ? 'expense'
+                              : 'bill';
+
+                      // Вызов метода создания транзакции
+                      await transactionCrud.createTransaction(username, {
+                        'amount': double.parse(enteredAmount),
+                        'category': selectedCategory,
+                        'type': transactionType,
+                        'timestamp': DateTime.now(),
+                      });
+                      await _loadTransactions();
+                      // Закрытие модального окна
+                      Navigator.pop(context);
+                    }
                   },
                   child: Icon(
                     Icons.check,
@@ -239,6 +293,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (username == null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -371,182 +435,192 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Padding(
                               padding:
                                   const EdgeInsets.fromLTRB(16.0, 0, 16, 16),
-                              child: LineChart(
-                                LineChartData(
-                                  gridData: FlGridData(
-                                    show: false,
-                                    drawHorizontalLine: true,
-                                    horizontalInterval: 1.0,
-                                    drawVerticalLine: true,
-                                    verticalInterval: 1.0,
-                                    getDrawingHorizontalLine: (value) {
-                                      return FlLine(
-                                        color: Colors.grey,
-                                        strokeWidth: 0.5,
-                                      );
-                                    },
-                                    getDrawingVerticalLine: (value) {
-                                      return FlLine(
-                                        color: Colors.grey,
-                                        strokeWidth: 0.5,
-                                      );
-                                    },
-                                  ),
-                                  titlesData: FlTitlesData(
-                                    leftTitles: AxisTitles(
-                                      sideTitles: SideTitles(
-                                        showTitles: isActive ? true : false,
-                                        getTitlesWidget: (value, meta) {
-                                          return Text(
-                                            value.toInt().toString(),
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 12,
+                              child: weeklyData.isEmpty
+                                  ? Center(child: CircularProgressIndicator())
+                                  : LineChart(
+                                      LineChartData(
+                                        gridData: FlGridData(
+                                          show: false,
+                                          drawHorizontalLine: true,
+                                          horizontalInterval: 1.0,
+                                          drawVerticalLine: true,
+                                          verticalInterval: 1.0,
+                                          getDrawingHorizontalLine: (value) {
+                                            return FlLine(
+                                              color: Colors.grey,
+                                              strokeWidth: 0.5,
+                                            );
+                                          },
+                                          getDrawingVerticalLine: (value) {
+                                            return FlLine(
+                                              color: Colors.grey,
+                                              strokeWidth: 0.5,
+                                            );
+                                          },
+                                        ),
+                                        titlesData: FlTitlesData(
+                                          leftTitles: AxisTitles(
+                                            sideTitles: SideTitles(
+                                              showTitles:
+                                                  isActive ? true : false,
+                                              reservedSize: 40,
                                             ),
-                                          );
-                                        },
-                                        reservedSize: 40,
-                                      ),
-                                    ),
-                                    bottomTitles: AxisTitles(
-                                      sideTitles: SideTitles(
-                                        showTitles: isActive ? true : false,
-                                        getTitlesWidget: (value, meta) {
-                                          return Text(
-                                            value.toInt().toString(),
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 12,
+                                          ),
+                                          bottomTitles: AxisTitles(
+                                            sideTitles: SideTitles(
+                                              showTitles:
+                                                  isActive ? true : false,
+                                              getTitlesWidget: (value, meta) {
+                                                const days = [
+                                                  'Mon',
+                                                  'Tue',
+                                                  'Wed',
+                                                  'Thu',
+                                                  'Fri',
+                                                  'Sat',
+                                                  'Sun'
+                                                ];
+
+                                                if (value.toInt() < 0 ||
+                                                    value.toInt() >=
+                                                        days.length) {
+                                                  return SizedBox(); // Пустой виджет для значений вне диапазона
+                                                }
+
+                                                return Text(
+                                                  days[value.toInt()],
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.black,
+                                                  ),
+                                                );
+                                              },
+                                              reservedSize: 40,
                                             ),
-                                          );
-                                        },
-                                        reservedSize: 40,
-                                      ),
-                                    ),
-                                    topTitles: AxisTitles(
-                                        sideTitles:
-                                            SideTitles(showTitles: false)),
-                                    rightTitles: AxisTitles(
-                                        sideTitles:
-                                            SideTitles(showTitles: false)),
-                                  ),
-                                  borderData: FlBorderData(
-                                    show: false,
-                                    border: const Border(
-                                      top: BorderSide.none,
-                                      right: BorderSide.none,
-                                      bottom: BorderSide(
-                                          color: Colors.black, width: 3),
-                                      left: BorderSide.none,
-                                    ),
-                                  ),
-                                  minX: 0,
-                                  maxX: 6,
-                                  minY: 0,
-                                  maxY: 6,
-                                  lineBarsData: [
-                                    LineChartBarData(
-                                      spots: const [
-                                        FlSpot(0, 3),
-                                        FlSpot(1, 1),
-                                        FlSpot(2, 4),
-                                        FlSpot(3, 1.5),
-                                        FlSpot(4, 5),
-                                        FlSpot(5, 2.5),
-                                        FlSpot(6, 4),
-                                      ],
-                                      isCurved: true,
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color.fromARGB(255, 62, 19, 252),
-                                          Color.fromARGB(255, 15, 20, 41),
+                                          ),
+                                          topTitles: AxisTitles(
+                                              sideTitles: SideTitles(
+                                                  showTitles: false)),
+                                          rightTitles: AxisTitles(
+                                              sideTitles: SideTitles(
+                                                  showTitles: false)),
+                                        ),
+                                        borderData: FlBorderData(
+                                          show: false,
+                                          border: const Border(
+                                            top: BorderSide.none,
+                                            right: BorderSide.none,
+                                            bottom: BorderSide(
+                                                color: Colors.black, width: 3),
+                                            left: BorderSide.none,
+                                          ),
+                                        ),
+                                        minX: 0,
+                                        maxX: 6,
+                                        minY: 0,
+                                        maxY: weeklyData.values.isNotEmpty
+                                            ? weeklyData.values
+                                                .reduce((a, b) => a > b ? a : b)
+                                            : 100,
+                                        lineBarsData: [
+                                          LineChartBarData(
+                                            spots: _generateSpots(),
+                                            isCurved: true,
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color.fromARGB(
+                                                    255, 62, 19, 252),
+                                                Color.fromARGB(255, 15, 20, 41),
+                                              ],
+                                            ),
+                                            barWidth: 4,
+                                            isStrokeCapRound: true,
+                                            belowBarData: BarAreaData(
+                                              show: false,
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.blue.withOpacity(0.3),
+                                                  Colors.lightBlueAccent
+                                                      .withOpacity(0.1),
+                                                ],
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                              ),
+                                            ),
+                                            dotData: FlDotData(show: false),
+                                          ),
+                                          LineChartBarData(
+                                            spots: const [
+                                              FlSpot(0, 2),
+                                              FlSpot(1, 1),
+                                              FlSpot(2, 2),
+                                              FlSpot(3, 1),
+                                              FlSpot(4, 3),
+                                              FlSpot(5, 2),
+                                              FlSpot(6, 4.5),
+                                            ],
+                                            isCurved: true,
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color.fromARGB(
+                                                    255, 41, 255, 148),
+                                                Color.fromARGB(255, 8, 88, 12),
+                                              ],
+                                            ),
+                                            barWidth: 4,
+                                            isStrokeCapRound: true,
+                                            belowBarData: BarAreaData(
+                                              show: false,
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.blue.withOpacity(0.3),
+                                                  Colors.lightBlueAccent
+                                                      .withOpacity(0.1),
+                                                ],
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                              ),
+                                            ),
+                                            dotData: FlDotData(show: false),
+                                          ),
+                                          LineChartBarData(
+                                            spots: const [
+                                              FlSpot(0, 1),
+                                              FlSpot(1, 3),
+                                              FlSpot(2, 2),
+                                              FlSpot(3, 2.5),
+                                              FlSpot(4, 4),
+                                              FlSpot(5, 5),
+                                              FlSpot(6, 3),
+                                            ],
+                                            isCurved: true,
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color.fromARGB(
+                                                    255, 234, 34, 252),
+                                                Color.fromARGB(
+                                                    255, 114, 39, 253),
+                                              ],
+                                            ),
+                                            barWidth: 4,
+                                            isStrokeCapRound: true,
+                                            belowBarData: BarAreaData(
+                                              show: false,
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.blue.withOpacity(0.3),
+                                                  Colors.lightBlueAccent
+                                                      .withOpacity(0.1),
+                                                ],
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                              ),
+                                            ),
+                                            dotData: FlDotData(show: false),
+                                          ),
                                         ],
                                       ),
-                                      barWidth: 4,
-                                      isStrokeCapRound: true,
-                                      belowBarData: BarAreaData(
-                                        show: false,
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.blue.withOpacity(0.3),
-                                            Colors.lightBlueAccent
-                                                .withOpacity(0.1),
-                                          ],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                        ),
-                                      ),
-                                      dotData: FlDotData(show: false),
                                     ),
-                                    LineChartBarData(
-                                      spots: const [
-                                        FlSpot(0, 2),
-                                        FlSpot(1, 1),
-                                        FlSpot(2, 2),
-                                        FlSpot(3, 1),
-                                        FlSpot(4, 3),
-                                        FlSpot(5, 2),
-                                        FlSpot(6, 4.5),
-                                      ],
-                                      isCurved: true,
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color.fromARGB(255, 41, 255, 148),
-                                          Color.fromARGB(255, 8, 88, 12),
-                                        ],
-                                      ),
-                                      barWidth: 4,
-                                      isStrokeCapRound: true,
-                                      belowBarData: BarAreaData(
-                                        show: false,
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.blue.withOpacity(0.3),
-                                            Colors.lightBlueAccent
-                                                .withOpacity(0.1),
-                                          ],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                        ),
-                                      ),
-                                      dotData: FlDotData(show: false),
-                                    ),
-                                    LineChartBarData(
-                                      spots: const [
-                                        FlSpot(0, 1),
-                                        FlSpot(1, 3),
-                                        FlSpot(2, 2),
-                                        FlSpot(3, 2.5),
-                                        FlSpot(4, 4),
-                                        FlSpot(5, 5),
-                                        FlSpot(6, 3),
-                                      ],
-                                      isCurved: true,
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color.fromARGB(255, 234, 34, 252),
-                                          Color.fromARGB(255, 114, 39, 253),
-                                        ],
-                                      ),
-                                      barWidth: 4,
-                                      isStrokeCapRound: true,
-                                      belowBarData: BarAreaData(
-                                        show: false,
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.blue.withOpacity(0.3),
-                                            Colors.lightBlueAccent
-                                                .withOpacity(0.1),
-                                          ],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                        ),
-                                      ),
-                                      dotData: FlDotData(show: false),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
                         ],
@@ -622,45 +696,61 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          Expanded(
-            flex: 3,
-            child: ListView.builder(
-              itemCount: transactions.length, // transactions - список операций
-              itemBuilder: (context, index) {
-                final transaction = transactions[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: transaction['type'] == 'income'
-                        ? Colors.green
-                        : Colors.red,
-                    child: Icon(
-                      transaction['type'] == 'income'
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                      color: Colors.white,
-                    ),
-                  ),
-                  title: Text(
-                    transaction['title']!,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  subtitle: Text(
-                    transaction['date']!,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  trailing: Text(
-                    transaction['amount']!,
-                    style: TextStyle(
-                      color: transaction['type'] == 'income'
-                          ? Colors.green
-                          : Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+          StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                return Expanded(
+                  flex: 3,
+                  child: transactions.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Нет транзакций',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: transactions.length,
+                          itemBuilder: (context, index) {
+                            final transaction = transactions[index];
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: transaction['type'] == 'income'
+                                    ? Colors.green
+                                    : Colors.red,
+                                child: Icon(
+                                  transaction['type'] == 'income'
+                                      ? Icons.arrow_downward
+                                      : Icons.arrow_upward,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              title: Text(
+                                transaction['title']!,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                transaction['date']!,
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              trailing: Text(
+                                transaction['type'] == 'income'
+                                    ? '+${transaction['amount']!}'
+                                    : '-${transaction['amount']!}',
+                                style: TextStyle(
+                                  color: transaction['type'] == 'income'
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                 );
-              },
-            ),
-          ),
+              }),
         ],
       ),
     );

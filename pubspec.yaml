@@ -41,6 +41,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_nav_bar: ^5.0.7
   fl_chart: ^0.69.2
+  intl: ^0.20.0
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,10 @@ flutter:
     - assets/nix.png
     - assets/ruble.png
     - assets/sber.png
+    - assets/zp.png
+    - assets/bonus.png
+    - assets/perevod.png
+    - assets/other.png
     - assets/diamond.gif
     - assets/auth_back.gif
     - assets/t-bank.jpg

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   Future<UserModel?> signUp(
       String username, String email, String password) async {
@@ -25,11 +26,6 @@ class AuthService {
         await _firestore.collection('users').doc(user.uid).set({
           'username': username,
           'email': email,
-          'friends': [],
-          'friendRequests': [],
-          'outgoingFriendRequests': [],
-          'profileImageUrl': '',
-          'categories': []
         });
         return UserModel.fromFirebase(user);
       } else {
@@ -81,6 +77,17 @@ class AuthService {
     } catch (e) {
       return null;
     }
+  }
+
+  Future<DocumentSnapshot?> fetchUser() async {
+    if (userId != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      return userDoc;
+    }
+    return null;
   }
 
   // Текущий пользователь
