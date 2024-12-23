@@ -22,6 +22,50 @@ class TransactionCrud {
     }
   }
 
+  Future<Map<int, Map<String, double>>> getMonthlyTransactionData(
+      String? username) async {
+    Map<int, Map<String, double>> monthlyData =
+        {}; // {месяц: {'income': сумма, 'expense': сумма}}
+
+    try {
+      if (username == null) return monthlyData;
+
+      QuerySnapshot currentUserName = await _firebaseFirestore
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .get();
+      var filter = currentUserName.docs.first.id;
+
+      QuerySnapshot transactionSnapshot = await _firebaseFirestore
+          .collection('users')
+          .doc(filter)
+          .collection('transaction')
+          .get();
+
+      for (var doc in transactionSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        DateTime timestamp = (data['timestamp'] as Timestamp).toDate();
+        int month = timestamp.month;
+
+        if (!monthlyData.containsKey(month)) {
+          monthlyData[month] = {'income': 0.0, 'expense': 0.0};
+        }
+
+        if (data['type'] == 'income') {
+          monthlyData[month]!['income'] =
+              (monthlyData[month]!['income'] ?? 0.0) + (data['amount'] ?? 0.0);
+        } else if (data['type'] == 'expense') {
+          monthlyData[month]!['expense'] =
+              (monthlyData[month]!['expense'] ?? 0.0) + (data['amount'] ?? 0.0);
+        }
+      }
+    } catch (e) {
+      print('Error fetching monthly transaction data: $e');
+    }
+
+    return monthlyData;
+  }
+
   Future<List<Map<String, dynamic>>> getTransactions(String? username) async {
     List<Map<String, dynamic>> transactions = [];
 
@@ -48,17 +92,18 @@ class TransactionCrud {
           ),
           'amount': data['amount'].toString(),
           'type': data['type'], // Тип транзакции: доход/расход
+          'category': data['category'], // Добавляем категорию
         });
       }
     } catch (e) {
       print('Error fetching transactions: $e');
     }
 
-    print(transactions);
     return transactions;
   }
 
-  Future<Map<String, double>> getWeeklyTransactionData(String? username) async {
+  Future<Map<String, double>> getWeeklyTransactionData(
+      String? username, int number) async {
     if (username == null) return {};
     QuerySnapshot currentUserName = await _firebaseFirestore
         .collection('users')
@@ -87,7 +132,10 @@ class TransactionCrud {
       DateTime timestamp = (data['timestamp'] as Timestamp).toDate();
       String dayOfWeek = _getDayOfWeek(timestamp);
 
-      if (data['type'] == 'expense') {
+      if (number == 1 && data['type'] == 'expense') {
+        weeklyData[dayOfWeek] = (weeklyData[dayOfWeek] ?? 0.0) + data['amount'];
+      }
+      if (number == 2 && data['type'] == 'income') {
         weeklyData[dayOfWeek] = (weeklyData[dayOfWeek] ?? 0.0) + data['amount'];
       }
     }
