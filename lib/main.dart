@@ -1,3 +1,4 @@
+import 'package:cashflow/back/auth_service/user_service.dart';
 import 'package:cashflow/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamProvider.value(
         initialData: null,
-        value: null,
+        value: AuthService().currentUser,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'CashFlow',

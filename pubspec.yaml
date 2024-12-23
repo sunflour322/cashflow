@@ -71,6 +71,7 @@ flutter:
     - assets/ruble.png
     - assets/sber.png
     - assets/diamond.gif
+    - assets/auth_back.gif
     - assets/t-bank.jpg
     - assets/alfa.jpg
 
