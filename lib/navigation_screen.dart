@@ -59,19 +59,19 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 tabs: [
                   GButton(
                     icon: Icons.home_filled,
-                    text: 'Home',
+                    text: 'Главное',
                     textSize: 30,
                     iconSize: 30,
                   ),
                   GButton(
                     icon: Icons.note,
-                    text: 'Purpose',
+                    text: 'Цели',
                     textSize: 30,
                     iconSize: 30,
                   ),
                   GButton(
                     icon: Icons.account_circle_outlined,
-                    text: 'Profile',
+                    text: 'Профиль',
                     leading: CircleAvatar(
                       backgroundImage: AssetImage('assets/nix.png'),
                       radius: 16,

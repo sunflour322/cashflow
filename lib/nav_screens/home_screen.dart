@@ -1,6 +1,5 @@
 import 'package:cashflow/back/auth_service/user_service.dart';
 import 'package:cashflow/back/transaction_collection/transaction_crud.dart';
-import 'package:cashflow/nav_screens/purpose_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
