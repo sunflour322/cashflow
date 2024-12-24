@@ -190,156 +190,161 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return FractionallySizedBox(
-          heightFactor: 0.7,
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 85, 85, 85),
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20))),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        '$type',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return FractionallySizedBox(
+            heightFactor: 0.7,
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      color: Color.fromARGB(255, 85, 85, 85),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          '$type',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Align(
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: MediaQuery.of(context).size.width / 4,
-                        child: Center(
-                          child: TextField(
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d{0,2}')),
-                            ],
-                            keyboardType: TextInputType.number,
-                            style: TextStyle(color: Colors.white, fontSize: 28),
-                            onChanged: (value) {
-                              setState(() {
-                                enteredAmount = value;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: '   0.00',
-                              hintStyle:
-                                  TextStyle(color: Colors.grey, fontSize: 28),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide.none,
+                      SizedBox(height: 10),
+                      Align(
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: MediaQuery.of(context).size.width / 4,
+                          child: Center(
+                            child: TextField(
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d{0,2}')),
+                              ],
+                              keyboardType: TextInputType.number,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 28),
+                              onChanged: (value) {
+                                setState(() {
+                                  enteredAmount = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: '   0.00',
+                                hintStyle:
+                                    TextStyle(color: Colors.grey, fontSize: 28),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Категории:',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(10),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1,
+                      SizedBox(height: 20),
+                    ],
                   ),
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = category['name']!;
-                        });
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundImage: AssetImage(category['image']!),
-                            backgroundColor:
-                                selectedCategory == category['name']
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Категории:',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(10),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            selectedCategory = category['name']!;
+                          });
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundImage: AssetImage(category['image']!),
+                              backgroundColor:
+                                  selectedCategory == category['name']
+                                      ? Colors.blue
+                                      : Colors.grey[300],
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              category['name']!,
+                              style: TextStyle(
+                                color: selectedCategory == category['name']
                                     ? Colors.blue
-                                    : Colors.grey[300],
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            category['name']!,
-                            style: TextStyle(
-                              color: selectedCategory == category['name']
-                                  ? Colors.blue
-                                  : Colors.black,
+                                    : Colors.black,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15),
-                child: FloatingActionButton(
-                  backgroundColor: Colors.black,
-                  onPressed: () async {
-                    if (enteredAmount.isNotEmpty &&
-                        selectedCategory.isNotEmpty) {
-                      final transactionCrud = TransactionCrud();
-
-                      // Определение типа транзакции
-                      final transactionType = type == 'Пополнения'
-                          ? 'income'
-                          : type == 'Траты'
-                              ? 'expense'
-                              : 'bill';
-
-                      // Вызов метода создания транзакции
-                      await transactionCrud.createTransaction(username, {
-                        'amount': double.parse(enteredAmount),
-                        'category': selectedCategory,
-                        'type': transactionType,
-                        'timestamp': DateTime.now(),
-                      });
-                      await _loadTransactions();
-                      // Закрытие модального окна
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.white,
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
+                Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: FloatingActionButton(
+                    backgroundColor: Colors.black,
+                    onPressed: () async {
+                      if (enteredAmount.isNotEmpty &&
+                          selectedCategory.isNotEmpty) {
+                        final transactionCrud = TransactionCrud();
+
+                        // Определение типа транзакции
+                        final transactionType = type == 'Пополнения'
+                            ? 'income'
+                            : type == 'Траты'
+                                ? 'expense'
+                                : 'bill';
+
+                        // Вызов метода создания транзакции
+                        await transactionCrud.createTransaction(username, {
+                          'amount': double.parse(enteredAmount),
+                          'category': selectedCategory,
+                          'type': transactionType,
+                          'timestamp': DateTime.now(),
+                        });
+                        await _loadTransactions().whenComplete(() {
+                          setState(() {});
+                        });
+                        // Закрытие модального окна
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Icon(
+                      Icons.check,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
       },
     );
   }

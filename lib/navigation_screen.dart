@@ -1,4 +1,3 @@
-import 'package:cashflow/nav_screens/add_screen.dart';
 import 'package:cashflow/nav_screens/home_screen.dart';
 import 'package:cashflow/nav_screens/purpose_screen.dart';
 import 'package:cashflow/nav_screens/settings_screen.dart';
@@ -17,7 +16,6 @@ class _NavigationScreenState extends State<NavigationScreen> {
       TextStyle(fontSize: 30, fontWeight: FontWeight.w600);
   final _widgetOptions = [
     const HomeScreen(),
-    const AddScreen(),
     const PurposeScreen(),
     const SettingsScreen(),
   ];
