@@ -3,7 +3,7 @@ import 'package:cashflow/auth_screens/landing.dart';
 import 'package:cashflow/navigation_screen.dart';
 
 final routes = {
-  '/': (context) => LandingScreen(),
+  '/': (context) => const LandingScreen(),
   '/auth': (context) => const AuthScreen(),
 //   '/reg': (context) => const RegPage(),
 //   '/meets': (context) => const MeetPage(),

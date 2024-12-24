@@ -705,6 +705,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     FlBorderData(show: false),
                                                 titlesData: FlTitlesData(
                                                   show: isActive ? true : false,
+                                                  leftTitles: AxisTitles(
+                                                    sideTitles: SideTitles(
+                                                      showTitles: true,
+                                                      reservedSize: 40,
+                                                      getTitlesWidget:
+                                                          (double value,
+                                                              TitleMeta meta) {
+                                                        return Text(
+                                                          value.toStringAsFixed(
+                                                              0), // Пример форматирования значений
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .white, // Измените на нужный цвет
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
                                                   bottomTitles: AxisTitles(
                                                     sideTitles: SideTitles(
                                                       showTitles: true,
