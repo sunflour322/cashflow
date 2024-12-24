@@ -280,7 +280,6 @@ class _AuthScreenState extends State<AuthScreen>
                   // Handle authorization logic here
                   await _authService.signUp(_nameController.text,
                       _emailController.text, _passwordController.text);
-                  Navigator.popAndPushNamed(context, '/');
                 },
                 label: const Text(
                   'Авторизоваться',

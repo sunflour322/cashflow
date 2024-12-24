@@ -16,9 +16,6 @@ class AuthService {
           .limit(1)
           .get();
 
-      if (userSnapshot.docs.isNotEmpty) {
-        throw Exception("Имя пользователя уже занято");
-      }
       if (userSnapshot.docs.isEmpty) {
         UserCredential userCredential = await _firebaseAuth
             .createUserWithEmailAndPassword(email: email, password: password);
@@ -28,10 +25,11 @@ class AuthService {
           'email': email,
         });
         return UserModel.fromFirebase(user);
-      } else {
+      } else if (userSnapshot.docs.isNotEmpty) {
         UserCredential userCredential = await _firebaseAuth
             .signInWithEmailAndPassword(email: email, password: password);
         User user = userCredential.user!;
+        print('asdasdasd');
         return UserModel.fromFirebase(user);
       }
     } catch (e) {

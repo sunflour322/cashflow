@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isActive = false;
   bool isSeccond = true;
+  bool _isDisposed = false;
   String? userId;
   String? username;
   double? globalMaxY;
@@ -27,6 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _initializeData();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true; // Устанавливаем флаг, что виджет уничтожен
+    super.dispose();
   }
 
   Future<void> _initializeData() async {
@@ -48,29 +55,71 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _loadWeeklyData() async {
     print('Fetching weekly data for username: $username');
+
     final data = await TransactionCrud().getWeeklyTransactionData(username, 1);
     final data2 = await TransactionCrud().getWeeklyTransactionData(username, 2);
 
+    if (_isDisposed) return; // Проверяем, уничтожен ли виджет
+
     if (data != null && data.isNotEmpty && data2 != null && data2.isNotEmpty) {
       print('Weekly data loaded: $data');
-      setState(() {
-        weeklyData = data;
-        weeklyData2 = data2;
-        double maxExpense = weeklyData.values.isNotEmpty
-            ? weeklyData.values.reduce((a, b) => a > b ? a : b)
-            : 0.0;
+      if (!_isDisposed) {
+        setState(() {
+          weeklyData = data;
+          weeklyData2 = data2;
 
-        double maxIncome = weeklyData2.values.isNotEmpty
-            ? weeklyData2.values.reduce((a, b) => a > b ? a : b)
-            : 0.0;
+          double maxExpense = weeklyData.values.isNotEmpty
+              ? weeklyData.values.reduce((a, b) => a > b ? a : b)
+              : 0.0;
 
-        globalMaxY = (maxExpense > maxIncome ? maxExpense : maxIncome);
-      });
+          double maxIncome = weeklyData2.values.isNotEmpty
+              ? weeklyData2.values.reduce((a, b) => a > b ? a : b)
+              : 0.0;
+
+          globalMaxY = (maxExpense > maxIncome ? maxExpense : maxIncome);
+        });
+      }
     } else {
       print('No weekly data found.');
+      if (!_isDisposed) {
+        setState(() {
+          weeklyData = {};
+          weeklyData2 = {};
+        });
+      }
+    }
+  }
+
+  Future<void> updateBalance(
+      String? username, double amount, String type) async {
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(username);
+
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userRef);
+      if (snapshot.exists) {
+        double currentBalance = snapshot.data()!['balance'] ?? 0.0;
+
+        // Обновляем баланс в зависимости от типа транзакции
+        double newBalance = type == 'income'
+            ? currentBalance + amount
+            : type == 'expense'
+                ? currentBalance - amount
+                : currentBalance; // Для счетов не учитываем
+
+        transaction.update(userRef, {'balance': newBalance});
+      }
+    });
+  }
+
+  double balance = 0.0;
+
+  Future<void> _loadBalance() async {
+    if (username != null) {
+      final currentBalance =
+          await TransactionCrud().getCurrentBalance(username);
       setState(() {
-        weeklyData = {};
-        weeklyData2 = {};
+        balance = currentBalance;
       });
     }
   }

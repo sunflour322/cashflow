@@ -22,6 +22,39 @@ class TransactionCrud {
     }
   }
 
+  Future<void> updateBalance(
+      String? username, double amount, String type) async {
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(username);
+
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userRef);
+      if (snapshot.exists) {
+        double currentBalance = snapshot.data()!['balance'] ?? 0.0;
+
+        // Обновляем баланс в зависимости от типа транзакции
+        double newBalance = type == 'income'
+            ? currentBalance + amount
+            : type == 'expense'
+                ? currentBalance - amount
+                : currentBalance; // Для счетов не учитываем
+
+        transaction.update(userRef, {'balance': newBalance});
+      }
+    });
+  }
+
+  Future<double> getCurrentBalance(String? username) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(username)
+        .get();
+    if (snapshot.exists && snapshot.data() != null) {
+      return snapshot.data()!['balance'] ?? 0.0;
+    }
+    return 0.0;
+  }
+
   Future<Map<int, Map<String, double>>> getMonthlyTransactionData(
       String? username) async {
     Map<int, Map<String, double>> monthlyData =
